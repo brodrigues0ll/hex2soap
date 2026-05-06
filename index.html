@@ -44,13 +44,6 @@
     const decimalEl = document.getElementById('decimal')
     const statusEl = document.getElementById('status')
 
-    function toHexString(byteArray) {
-      return Array.from(byteArray)
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
-        .toUpperCase()
-    }
-
     function convertToSoapAdmin(hex) {
       // separa em bytes
       const bytes = hex.match(/.{2}/g)
@@ -73,7 +66,7 @@
           statusEl.innerText = "Aguardando leitura..."
 
           ndef.onreading = event => {
-            const uidHex = toHexString(event.serialNumber)
+            const uidHex = event.serialNumber.replace(/:/g, '').toUpperCase()
 
             const { reversed, decimal } = convertToSoapAdmin(uidHex)
 
