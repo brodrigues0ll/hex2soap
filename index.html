@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leitor NFC - SoapAdmin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+
+  <div class="bg-gray-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center space-y-4">
+    <h1 class="text-2xl font-bold">Leitor NFC</h1>
+    <p class="text-gray-400">Aproxime o crachá do celular</p>
+
+    <button id="startBtn"
+      class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-xl font-semibold w-full">
+      Iniciar Leitura NFC
+    </button>
+
+    <div class="mt-4 space-y-2 text-left">
+      <div>
+        <span class="text-gray-400">UID (HEX):</span>
+        <div id="hex" class="font-mono text-lg break-all">---</div>
+      </div>
+
+      <div>
+        <span class="text-gray-400">UID Invertido:</span>
+        <div id="reversed" class="font-mono text-lg break-all">---</div>
+      </div>
+
+      <div>
+        <span class="text-gray-400">SoapAdmin (Decimal):</span>
+        <div id="decimal" class="font-mono text-xl text-green-400 break-all">---</div>
+      </div>
+    </div>
+
+    <div id="status" class="text-sm text-gray-400"></div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn')
+    const hexEl = document.getElementById('hex')
+    const reversedEl = document.getElementById('reversed')
+    const decimalEl = document.getElementById('decimal')
+    const statusEl = document.getElementById('status')
+
+    function toHexString(byteArray) {
+      return Array.from(byteArray)
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+        .toUpperCase()
+    }
+
+    function convertToSoapAdmin(hex) {
+      // separa em bytes
+      const bytes = hex.match(/.{2}/g)
+
+      // inverte (little endian)
+      const reversed = bytes.reverse().join('')
+
+      // decimal
+      const decimal = parseInt(reversed, 16)
+
+      return { reversed, decimal }
+    }
+
+    startBtn.onclick = async () => {
+      if ('NDEFReader' in window) {
+        try {
+          const ndef = new NDEFReader()
+          await ndef.scan()
+
+          statusEl.innerText = "Aguardando leitura..."
+
+          ndef.onreading = event => {
+            const uidHex = toHexString(event.serialNumber)
+
+            const { reversed, decimal } = convertToSoapAdmin(uidHex)
+
+            hexEl.innerText = uidHex
+            reversedEl.innerText = reversed
+            decimalEl.innerText = decimal.toString().padStart(10, '0')
+
+            statusEl.innerText = "Cartão lido com sucesso!"
+          }
+
+        } catch (error) {
+          statusEl.innerText = "Erro: " + error
+        }
+      } else {
+        statusEl.innerText = "Web NFC não suportado neste dispositivo."
+      }
+    }
+  </script>
+
+</body>
+</html>
