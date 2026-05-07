@@ -102,10 +102,14 @@
       })
     }
 
-    convertBtn.onclick = () => applyConversion(hexInput.value.trim())
+    function sanitizeHex(val) {
+      return val.trim().replace(/[.\-:]/g, '')
+    }
+
+    convertBtn.onclick = () => applyConversion(sanitizeHex(hexInput.value))
 
     hexInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') applyConversion(hexInput.value.trim())
+      if (e.key === 'Enter') applyConversion(sanitizeHex(hexInput.value))
     })
 
     startBtn.onclick = async () => {
